@@ -1,6 +1,6 @@
-import { Component, computed, DestroyRef, inject, input, OnInit } from '@angular/core';
+import { Component, inject, input, OnInit } from '@angular/core';
 import { UsersService } from '../users.service';
-import { ActivatedRoute, RouterOutlet, RouterLink } from '@angular/router';
+import { RouterOutlet, RouterLink, ResolveFn, ActivatedRouteSnapshot, RouterState, RouterStateSnapshot, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-user-tasks',
@@ -10,27 +10,34 @@ import { ActivatedRoute, RouterOutlet, RouterLink } from '@angular/router';
   styleUrl: './user-tasks.component.css',
   
 })
-export class UserTasksComponent implements OnInit{
-// userId = input.required<string>();
-userName = ''
-  private userService = inject(UsersService);
-  private activatedRoute = inject(ActivatedRoute);
-  private destroyref = inject(DestroyRef);
+export class UserTasksComponent {
+  userName = input.required<string>();
+  message = input.required<string>();
+ // private activatedRoute = inject(ActivatedRoute);
 
-//  userName = computed(
-//    () => this.userService.users.find((u) => u.id === this.userId())?.name
-//  );
-
-  ngOnInit(): void {
-    console.log(this.activatedRoute);
-    const subscription = this.activatedRoute.paramMap.subscribe({
-      next: paramMap => {
-        this.userName = this.userService.users.find(
-          (u) => u.id === paramMap.get('userId'))
-          ?.name || '';
-      },
-    });
-
-    this.destroyref.onDestroy(() => subscription.unsubscribe());
+ // ngOnInit(): void {
+ //   this.activatedRoute.data.subscribe({
+ //     next: data => {
+ //       console.log(data);
+ //     }
+ //   })
   }
+
+export const resolveUserName: ResolveFn<string> = (
+  activatedRoute: ActivatedRouteSnapshot, 
+  routerState: RouterStateSnapshot
+ ) => {
+    const usersService = inject(UsersService);
+    const userName = 
+    usersService.users.find(
+      (u) => u.id === activatedRoute.paramMap.get('userId')
+    )?.name || '';
+    return userName;
+};
+
+export const resolveTitle: ResolveFn<string> = (
+   activatedRoute,
+  routerState
+) => {
+  return resolveUserName(activatedRoute, routerState) + '\'s Tasks' //Max's Tasks
 }
